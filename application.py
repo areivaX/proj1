@@ -24,7 +24,7 @@ db = scoped_session(sessionmaker(bind=engine))
 @app.route("/")
 def index():
     if 'username' in session:
-        return render_template("index.html", message = "logged in as " + session['username'])
+        return render_template("index.html", message = "logged in as " + session['current_user'].username)
     return render_template("index.html", message="not signed in")
 
 
@@ -35,10 +35,11 @@ def login():
     if request.method == "POST":
         req = request.form
         inputUname, inputPass = req.get("username"), req.get("password")
-        if validate_user(inputUname, inputPass):
-            session['username'] = inputUname
+        user = validate_user(inputUname, inputPass, db)
+        if user is None:
+            error = "incorrect username or password"
+        else:
+            session['current_user'] = user
             flash("success")
             return redirect(url_for('index'))
-        else:
-            error = "incorrect username or password"
     return render_template("login.html", error=error)
