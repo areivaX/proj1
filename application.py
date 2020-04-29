@@ -21,11 +21,18 @@ engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
 
-@app.route("/")
+@app.route("/", methods=["GET","POST"])
 def index():
-    if 'current_user' in session:
-        return render_template("index.html", message = "logged in as " + session['current_user'].username)
-    return render_template("index.html", message="not signed in")
+    error = None
+    if request.method == "POST":
+        req = request.form
+        #hard-coded for testing
+        search_type = "author"
+        input = req.get("search_input")
+        results = searchBooks(search_type,input, db)
+        return render_template("search.html", data = results)
+    return render_template("search.html", message=error)
+
 
 
 
@@ -43,7 +50,7 @@ def login():
             session['logged_in'] = True
             flash("success")
             return redirect(url_for('index'))
-    return render_template("login.html", error=error)
+    return render_template("login.html", message = error)
 
 
 @app.route("/logout", methods=["GET","POST"])

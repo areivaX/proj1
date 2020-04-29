@@ -37,3 +37,9 @@ def a4():
 def a5():
     db.execute("ALTER TABLE books ALTER COLUMN isbn TYPE VARCHAR")
     db.commit()
+
+
+def a6():
+    res = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id ").fetchone()
+    print(res)
+a6()

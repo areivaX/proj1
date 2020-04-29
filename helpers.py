@@ -25,3 +25,12 @@ def validate_NewUser(username, pass1, pass2, email, db):
          user = db.execute("SELECT * FROM users WHERE username = :username AND password = :password",
                      {"username":username, "password":pass1}).fetchone()
     return user, message
+
+
+def searchBooks(search_type,input, db):
+
+    #res = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id " \
+    #                    "WHERE :field LIKE :input", {"input":f"%{input}%", "field":search_type}).fetchall()
+    res = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id " \
+                    "WHERE name LIKE '%tamora%' ")
+    return res

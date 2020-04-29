@@ -29,6 +29,8 @@
             <li class="nav-item active">
               <a class="nav-link" href='{{ url_for("logout") }}'> log out <span class="sr-only">(current)</span></a>
             </li>
+
+
    {% else %}
              <li class="nav-item active">
                <a class="nav-link" href='{{ url_for("login") }}'> log in <span class="sr-only">(current)</span></a>
@@ -49,6 +51,12 @@
 
         </div>
       </nav>
+
+      {% if session['logged_in'] == True %}
+          <div class="container">
+            <p> logged in as {{ session['current_user'].username }}  </p>
+          </div>
+      {% endif %}
 
       {% with messages = get_flashed_messages() %}
         {% if messages %}
