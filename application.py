@@ -27,7 +27,7 @@ def index():
     if request.method == "POST":
         req = request.form
         #hard-coded for testing
-        search_type = "author"
+        search_type = req.get("search_options")
         input = req.get("search_input")
         results = searchBooks(search_type,input, db)
         return render_template("search.html", data = results)

@@ -40,9 +40,28 @@ def a2():
                     {"isbn":isbn, "title":title, "year":year, "author_id":author_id})
     db.commit()
 
+
+
+
+
+def a7():
+    #db.execute("ALTER TABLE books ADD display_title VARCHAR")
+    db.execute("UPDATE books SET display_title = title")
+    db.execute("UPDATE books SET title = LOWER(title)")
+    db.commit()
+
+
+def a8():
+    #db.execute("ALTER TABLE authors ADD display_name VARCHAR")
+    db.execute("UPDATE authors SET display_name = name")
+    db.execute("UPDATE authors SET name = LOWER(name)")
+    db.commit()
+
 def main():
     a1()
     a2()
+    a7()
+    a8()
 
 if __name__ == "__main__":
     main()

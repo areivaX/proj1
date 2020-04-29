@@ -32,5 +32,7 @@ def searchBooks(search_type,input, db):
     #res = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id " \
     #                    "WHERE :field LIKE :input", {"input":f"%{input}%", "field":search_type}).fetchall()
     res = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id " \
-                    "WHERE name LIKE '%tamora%' ")
+                    "WHERE "+search_type+" LIKE :name", {"name":'%'+input+'%'}).fetchall()
+
+    #not great that I'm pasting directly to an SQL command? but search_type can only be predetermined values
     return res

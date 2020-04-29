@@ -40,6 +40,23 @@ def a5():
 
 
 def a6():
-    res = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id ").fetchone()
-    print(res)
-a6()
+    res = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id " \
+                    "WHERE "+'LOWER(name)'+" LIKE :name", {"name":'%tamora%'}).fetchall()
+    for r in res: print(r)
+
+
+def a7():
+    db.execute("ALTER TABLE books ADD display_title VARCHAR")
+    db.execute("UPDATE books SET display_title = title")
+    db.execute("UPDATE books SET title = LOWER(title)")
+    db.commit()
+
+
+def a8():
+    db.execute("ALTER TABLE authors ADD display_name VARCHAR")
+    db.execute("UPDATE authors SET display_name = name")
+    db.execute("UPDATE authors SET name = LOWER(name)")
+    db.commit()
+
+
+a8()
