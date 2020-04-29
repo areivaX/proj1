@@ -23,14 +23,17 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/", methods=["GET","POST"])
 def index():
-    error = None
+    error = ""
     if request.method == "POST":
         req = request.form
         #hard-coded for testing
         search_type = req.get("search_options")
         input = req.get("search_input")
+        input = input.lower()
         results = searchBooks(search_type,input, db)
-        return render_template("search.html", data = results)
+        if len(results) == 0:
+            error = "no book meets your search criteria"
+        return render_template("search.html", data = results, message=error)
     return render_template("search.html", message=error)
 
 
@@ -78,3 +81,10 @@ def signup():
             return redirect(url_for('index'))
 
     return render_template("signup.html", error=error)
+
+
+@app.route("/book/<book_id>")
+def book(book_id):
+    book = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id " \
+                    "WHERE book_id = :id", {"id":int(book_id)}).fetchone()
+    return render_template("book.html", book=book)
