@@ -1,3 +1,5 @@
+import requests
+
 def validate_user(a,b, db):
     user = db.execute("SELECT * FROM users WHERE username = :username AND password = :password",
                 {"username":a, "password":b}).fetchone()
@@ -36,3 +38,42 @@ def searchBooks(search_type,input, db):
 
     #not great that I'm pasting directly to an SQL command? but search_type can only be predetermined values
     return res
+
+
+def getGRdata(string, key, isbn):
+    res = requests.get(string, params={"key": key, "isbns": isbn})
+    if res.status_code != 200:
+      raise Exception("ERROR: API request unsuccessful.")
+    review_data = res.json()
+    return review_data
+
+
+def addReview(uid, rating, text, book_id, db):
+    message = ""
+    db.execute("INSERT INTO reviews (book_id, user_id, rating, text) VALUES " \
+                "(:book_id, :user_id, :rating, :text)",
+                {"book_id":book_id, "rating":rating, "text":text, "user_id":uid })
+    db.commit()
+
+    return message
+
+def findReview(bID, uID, db):
+    rev = db.execute("SELECT * FROM reviews WHERE book_id = :bID AND user_id = :uID",
+                {"bID":bID, "uID":uID}).fetchone()
+    return rev
+
+def findReviews(bID, db):
+    rev = db.execute("SELECT * FROM reviews WHERE book_id = :bID",
+            {"bID":bID}).fetchall()
+    return rev
+
+def getDict(isbn, db, GRlink, key):
+    book = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id " \
+                    "WHERE isbn = :isbn", {"isbn":isbn}).fetchone()
+
+    review_data = getGRdata(GRlink,key,isbn)
+    rCount = review_data['books'][0]['work_ratings_count'] #i think goodread's json is in incorrect format? selecting from list shouldn't be necessary?
+    rAvg = review_data['books'][0]['average_rating']
+
+    dicty = {"title": book.title, "author":book.name, "year":book.year, "isbn":isbn, "review_count":rCount, "average_score":float(rAvg)}
+    return dicty

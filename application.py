@@ -1,6 +1,7 @@
 import os
 from helpers import *
-from flask import Flask, session, request, render_template, flash, redirect, url_for
+from flask import Flask, session, request, render_template, flash, redirect, url_for, jsonify
+import requests
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -19,6 +20,10 @@ Session(app)
 # Set up database
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
+
+goodReadsRevCount = "https://www.goodreads.com/book/review_counts.json"
+goodReadsRev = "https://www.goodreads.com/book/isbn/ISBN?format=FORMAT"
+xkey = "lfvEC9SpVfHoOt44qSldow"
 
 
 @app.route("/", methods=["GET","POST"])
@@ -83,8 +88,36 @@ def signup():
     return render_template("signup.html", error=error)
 
 
-@app.route("/book/<book_id>")
+@app.route("/book/<book_id>", methods=["GET","POST"])
 def book(book_id):
+    error=""
     book = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id " \
                     "WHERE book_id = :id", {"id":int(book_id)}).fetchone()
-    return render_template("book.html", book=book)
+
+    if 'logged_in' in list(session.keys()):
+        npr = findReview(book_id, session['current_user'].user_id, db) is None
+    else:
+        npr = "who cares"
+
+    other_reviews = findReviews(book_id,db)
+
+    review_data = getGRdata(goodReadsRevCount,xkey,book.isbn)
+    rCount = review_data['books'][0]['work_ratings_count']
+    rAvg = review_data['books'][0]['average_rating']
+
+
+    if request.method == "POST":
+        req = request.form
+        rating, text = req.get("rating"), req.get("review_text")
+        error = addReview(session['current_user'].user_id, rating, text, book_id, db)
+        if error=="":
+            flash("review submitted")
+        return redirect(url_for('book', book_id=book_id))
+
+    return render_template("book.html", book=book, reviews = other_reviews,
+                    rCount = rCount, rAvg = rAvg, message=error, no_prev_review=npr)
+
+@app.route("/api/<isbn>")
+def api(isbn):
+    dicty = getDict(isbn, db, goodReadsRevCount ,xkey)
+    return jsonify(dicty)
