@@ -1,6 +1,6 @@
 import os
 from helpers import *
-from flask import Flask, session, request, render_template, flash, redirect, url_for, jsonify
+from flask import Flask, session, request, render_template, flash, redirect, url_for, jsonify, abort
 import requests
 from flask_session import Session
 from sqlalchemy import create_engine
@@ -25,6 +25,10 @@ goodReadsRevCount = "https://www.goodreads.com/book/review_counts.json"
 goodReadsRev = "https://www.goodreads.com/book/isbn/ISBN?format=FORMAT"
 xkey = "lfvEC9SpVfHoOt44qSldow"
 
+
+@app.errorhandler(404)
+def page_not_found(error):
+   return render_template('404.html', title = '404'), 404
 
 @app.route("/", methods=["GET","POST"])
 def index():
@@ -53,6 +57,7 @@ def login():
         user = validate_user(inputUname, inputPass, db)
         if user is None:
             error = "incorrect username or password"
+            flash(error)
         else:
             session['current_user'] = user
             session['logged_in'] = True
@@ -66,7 +71,7 @@ def logout():
     error=None
     [session.pop(key) for key in list(session.keys())]
     flash("logged out")
-    return render_template("index.html", message = "not signed in")
+    return render_template("index.html",message="you are logged out")
 
 
 @app.route("/signup", methods=["GET","POST"])
@@ -120,4 +125,7 @@ def book(book_id):
 @app.route("/api/<isbn>")
 def api(isbn):
     dicty = getDict(isbn, db, goodReadsRevCount ,xkey)
+    if dicty==404:
+        abort(404)
+    #should return 404 error if isbn not in db
     return jsonify(dicty)

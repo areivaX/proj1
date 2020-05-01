@@ -67,9 +67,14 @@ def findReviews(bID, db):
             {"bID":bID}).fetchall()
     return rev
 
+
+
+
 def getDict(isbn, db, GRlink, key):
     book = db.execute("SELECT * FROM books JOIN authors ON books.author_id = authors.id " \
                     "WHERE isbn = :isbn", {"isbn":isbn}).fetchone()
+    if book is None:
+        return 404
 
     review_data = getGRdata(GRlink,key,isbn)
     rCount = review_data['books'][0]['work_ratings_count'] #i think goodread's json is in incorrect format? selecting from list shouldn't be necessary?

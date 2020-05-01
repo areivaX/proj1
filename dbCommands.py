@@ -99,5 +99,22 @@ def a12(bID, uID):
     return rev
 
 
-dicty = {'books': [{'id': 2410506, 'isbn': '000723368X', 'isbn13': '9780007233687', 'ratings_count': 35417, 'reviews_count': 62362, 'text_reviews_count': 1630, 'work_ratings_count': 39733, 'work_reviews_count': 70560, 'work_text_reviews_count': 2174, 'average_rating': '3.70'}]}
-print(dicty['books'][0]['id'])
+
+def a13():
+    for tab in ["reviews","authors","books"]:
+        db.execute(f"ALTER TABLE {tab} RENAME TO {tab[0:-1]}_s")
+    db.commit()
+
+def a14():
+    db.execute("ALTER TABLE user_a RENAME TO user_s")
+    db.commit()
+
+def a15():
+    for tab in ['reviews','authors','books','users']:
+        db.execute(f"DROP TABLE {tab} CASCADE")
+    db.commit()
+
+def undo_a14():
+    for tab in ['review','author','book','user']:
+        db.execute(f"ALTER TABLE {tab}_s RENAME TO {tab}s")
+    db.commit()
